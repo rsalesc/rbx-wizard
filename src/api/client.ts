@@ -44,66 +44,122 @@ class ApiClient {
     const { params, ...fetchOptions } = options || {};
     const url = this.buildUrl(endpoint, params);
     
-    const response = await fetch(url, {
-      ...fetchOptions,
-      method: 'GET',
-      headers: {
-        ...this.defaultHeaders,
-        ...fetchOptions.headers,
-      },
-    });
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(url, {
+        ...fetchOptions,
+        method: 'GET',
+        headers: {
+          ...this.defaultHeaders,
+          ...fetchOptions.headers,
+        },
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: API server is not responding');
+      }
+      throw error;
+    }
   }
 
   async post<T, D = unknown>(endpoint: string, data?: D, options?: ApiRequestOptions): Promise<T> {
     const { params, ...fetchOptions } = options || {};
     const url = this.buildUrl(endpoint, params);
     
-    const response = await fetch(url, {
-      ...fetchOptions,
-      method: 'POST',
-      headers: {
-        ...this.defaultHeaders,
-        ...fetchOptions.headers,
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(url, {
+        ...fetchOptions,
+        method: 'POST',
+        headers: {
+          ...this.defaultHeaders,
+          ...fetchOptions.headers,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: API server is not responding');
+      }
+      throw error;
+    }
   }
 
   async put<T, D = unknown>(endpoint: string, data?: D, options?: ApiRequestOptions): Promise<T> {
     const { params, ...fetchOptions } = options || {};
     const url = this.buildUrl(endpoint, params);
     
-    const response = await fetch(url, {
-      ...fetchOptions,
-      method: 'PUT',
-      headers: {
-        ...this.defaultHeaders,
-        ...fetchOptions.headers,
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(url, {
+        ...fetchOptions,
+        method: 'PUT',
+        headers: {
+          ...this.defaultHeaders,
+          ...fetchOptions.headers,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: API server is not responding');
+      }
+      throw error;
+    }
   }
 
   async delete<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
     const { params, ...fetchOptions } = options || {};
     const url = this.buildUrl(endpoint, params);
     
-    const response = await fetch(url, {
-      ...fetchOptions,
-      method: 'DELETE',
-      headers: {
-        ...this.defaultHeaders,
-        ...fetchOptions.headers,
-      },
-    });
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(url, {
+        ...fetchOptions,
+        method: 'DELETE',
+        headers: {
+          ...this.defaultHeaders,
+          ...fetchOptions.headers,
+        },
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: API server is not responding');
+      }
+      throw error;
+    }
   }
 }
 

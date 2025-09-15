@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseApiState<T> {
   data: T | null;
@@ -20,20 +20,51 @@ export function useApi<T>(
     error: null,
   });
 
+  // Use a ref to store the latest apiCall function
+  const apiCallRef = useRef(apiCall);
+  
+  // Update the ref whenever apiCall changes
+  useEffect(() => {
+    apiCallRef.current = apiCall;
+  });
+
+  // Create a stable fetch function
   const fetchData = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
-      const result = await apiCall();
+      const result = await apiCallRef.current();
       setState({ data: result, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });
     }
-  }, [apiCall]);
+  }, []); // Empty dependencies since we use ref
 
+  // Trigger fetch when dependencies change
   useEffect(() => {
-    fetchData();
-  }, [...dependencies, fetchData]);
+    let cancelled = false;
+
+    const doFetch = async () => {
+      setState(prev => ({ ...prev, loading: true, error: null }));
+      
+      try {
+        const result = await apiCallRef.current();
+        if (!cancelled) {
+          setState({ data: result, loading: false, error: null });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setState({ data: null, loading: false, error: error as Error });
+        }
+      }
+    };
+
+    doFetch();
+
+    return () => {
+      cancelled = true;
+    };
+  }, dependencies); // Only re-run when explicit dependencies change
 
   return {
     ...state,

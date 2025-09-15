@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 // Export API hooks
 export * from './useApi';
 export * from './useStatements';
-export * from './useCodeTemplates';
 
 // Custom hook for local storage
 export const useLocalStorage = <T>(key: string, initialValue: T) => {

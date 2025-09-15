@@ -1,5 +1,6 @@
 import React from 'react';
-import { PDFViewer, CodeEditorColumn, ResizableColumnsV2 } from '../components';
+import ColumnManager from '../components/ColumnManager';
+import DraggableColumns from '../components/DraggableColumns';
 
 const Homepage: React.FC = () => {
 
@@ -7,55 +8,19 @@ const Homepage: React.FC = () => {
     <div className="h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-800">RBX Wizard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">RBX Wizard</h1>
+          
+          {/* Column management controls */}
+          <div className="flex items-center space-x-4">
+            <ColumnManager />
+          </div>
+        </div>
       </header>
 
-      {/* Main Content - Resizable Columns */}
+      {/* Main Content - Resizable Columns with Drag and Drop */}
       <div className="flex-1 overflow-hidden">
-        <ResizableColumnsV2
-          columns={[
-            {
-              id: 'pdf-viewer',
-              content: (
-                <PDFViewer 
-                  pdfFile="http://localhost:8000/statement"
-                  className="h-full"
-                />
-              ),
-              minSize: 15,
-              maxSize: 50,
-              defaultSize: 30
-            },
-            {
-              id: 'validator-editor',
-              content: (
-                <CodeEditorColumn
-                  initialTemplate="validator"
-                  title="Validator"
-                  className="h-full"
-                />
-              ),
-              minSize: 20,
-              maxSize: 60,
-              defaultSize: 35
-            },
-            {
-              id: 'checker-editor',
-              content: (
-                <CodeEditorColumn
-                  initialTemplate="checker"
-                  title="Checker"
-                  className="h-full"
-                />
-              ),
-              minSize: 20,
-              maxSize: 60,
-              defaultSize: 35
-            }
-          ]}
-          className="h-full"
-          resizeHandleClassName="border-x border-gray-300"
-        />
+        <DraggableColumns />
       </div>
     </div>
   );

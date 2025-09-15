@@ -30,3 +30,6 @@ export const sleep = (ms: number): Promise<void> => {
 export const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9);
 };
+
+// Monaco editor configurations
+export { initializeMonacoLatex } from './monacoConfig';

@@ -16,58 +16,36 @@ export const Button = ({
   className = '',
   ...props 
 }: ButtonProps) => {
-  const baseStyles = {
-    borderRadius: 'var(--border-radius)',
-    border: '1px solid transparent',
-    fontWeight: '500',
-    fontFamily: 'inherit',
-    cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
-    transition: 'all 0.25s',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5rem',
+  const baseClasses = 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  
+  const sizeClasses = {
+    small: 'px-3 py-1.5 text-sm',
+    medium: 'px-4 py-2 text-base',
+    large: 'px-6 py-3 text-lg',
   };
 
-  const sizeStyles = {
-    small: { padding: '0.4em 0.8em', fontSize: '0.875em' },
-    medium: { padding: '0.6em 1.2em', fontSize: '1em' },
-    large: { padding: '0.8em 1.6em', fontSize: '1.125em' },
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white border border-transparent hover:bg-blue-700 focus:ring-blue-500',
+    secondary: 'bg-gray-200 text-gray-900 border border-gray-300 hover:bg-gray-300 focus:ring-gray-500',
+    outline: 'bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500',
   };
 
-  const variantStyles = {
-    primary: {
-      backgroundColor: 'var(--primary-color)',
-      color: 'white',
-      borderColor: 'var(--primary-color)',
-    },
-    secondary: {
-      backgroundColor: 'var(--surface-color)',
-      color: 'var(--text-color)',
-      borderColor: 'var(--border-color)',
-    },
-    outline: {
-      backgroundColor: 'transparent',
-      color: 'var(--primary-color)',
-      borderColor: 'var(--primary-color)',
-    },
-  };
+  const disabledClasses = 'disabled:opacity-60 disabled:cursor-not-allowed';
 
-  const combinedStyles = {
-    ...baseStyles,
-    ...sizeStyles[size],
-    ...variantStyles[variant],
-    opacity: disabled || isLoading ? 0.6 : 1,
-  };
+  const combinedClasses = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${disabledClasses} ${className}`;
 
   return (
     <button
-      style={combinedStyles}
       disabled={disabled || isLoading}
-      className={className}
+      className={combinedClasses}
       {...props}
     >
-      {isLoading && <div className="spinner" style={{ width: '16px', height: '16px' }} />}
+      {isLoading && (
+        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      )}
       {children}
     </button>
   );

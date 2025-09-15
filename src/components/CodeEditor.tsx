@@ -1,5 +1,6 @@
 import React from 'react';
 import Editor from '@monaco-editor/react';
+import { registerSimpleLatexLanguage } from '../utils/monacoLatexSimple';
 
 interface CodeEditorProps {
   code: string;
@@ -19,6 +20,9 @@ interface CodeEditorProps {
   };
 }
 
+// Track if LaTeX has been initialized
+let latexInitialized = false;
+
 const CodeEditor: React.FC<CodeEditorProps> = ({
   code,
   onChange,
@@ -33,6 +37,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     lineNumbers: 'on' as const,
     automaticLayout: true,
     padding: { top: 16, bottom: 16 },
+    readOnly: false,
+    domReadOnly: false,
     ...options
   };
 
@@ -46,6 +52,18 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         onChange={(value) => onChange(value || '')}
         theme={theme}
         options={defaultOptions}
+        beforeMount={(monaco) => {
+          // Ensure LaTeX is registered only once
+          if (!latexInitialized) {
+            try {
+              registerSimpleLatexLanguage(monaco);
+              latexInitialized = true;
+              console.log('LaTeX support initialized successfully');
+            } catch (error) {
+              console.error('Error initializing LaTeX support:', error);
+            }
+          }
+        }}
       />
     </div>
   );
