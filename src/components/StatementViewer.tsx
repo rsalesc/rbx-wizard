@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import { useStatementColumn, useColumns } from '../state/hooks';
 import PDFViewer from './PDFViewer';
-import CodeEditor from './CodeEditor';
+import EditableCodeEditor from './EditableCodeEditor';
 import { LoadingSpinner } from './common/LoadingSpinner';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { statementsService } from '../api/services/statements';
+import { statementCodeTextState, statementPdfVersionState, statementBuildingState } from '../state/atoms';
 
 interface StatementViewerProps {
   columnId: string;
@@ -29,6 +32,23 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
   const { columns, removeColumn } = useColumns();
   const canRemove = columns.length > 1;
   
+  // Shared statement code state across viewers
+  const statementKey = selectedStatementId || '__none__';
+  const [sharedCode, setSharedCode] = useRecoilState(statementCodeTextState(statementKey));
+  const bumpPdfVersion = useSetRecoilState(statementPdfVersionState(statementKey));
+  const [isBuilding, setIsBuilding] = useRecoilState(statementBuildingState(statementKey));
+
+  // Initialize shared code from API response on first load for this statement
+  React.useEffect(() => {
+    if (content.type === 'code' && content.content) {
+      const apiCode = (content.content as any).code || '';
+      if (sharedCode === '' && apiCode !== '') {
+        setSharedCode(apiCode);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content, selectedStatementId]);
+  
   // Drag and drop setup
   const {
     attributes,
@@ -48,16 +68,65 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
   } : {};
 
   // Set initial selected statement when statements are loaded
+  // Also validate that selectedStatementId exists in the current statements list
   useEffect(() => {
-    if (statements && statements.length > 0 && !selectedStatementId) {
-      selectStatement(statements[0].name);
+    if (statements && statements.length > 0) {
+      console.log('Available statements:', statements.map(s => s.name));
+      console.log('Current selectedStatementId:', selectedStatementId);
+      
+      // If no statement is selected, select the first one
+      if (!selectedStatementId) {
+        console.log('No statement selected, selecting first:', statements[0].name);
+        selectStatement(statements[0].name);
+      } else {
+        // Validate that the selected statement still exists
+        const statementExists = statements.some(s => s.name === selectedStatementId);
+        if (!statementExists) {
+          // If the persisted statement doesn't exist, select the first one
+          console.log('Selected statement does not exist, selecting first:', statements[0].name);
+          selectStatement(statements[0].name);
+        } else {
+          console.log('Selected statement is valid:', selectedStatementId);
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statements]); // Only re-run when statements change
 
   const handleStatementChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log('Current selectedStatementId:', selectedStatementId);
+    console.log('Selecting new statement:', e.target.value);
     selectStatement(e.target.value);
   };
+
+  const handleSaveCode = useCallback(async (codeToSave: string) => {
+    console.log(`StatementViewer: Saving code for statement ${selectedStatementId}`, { codeToSave });
+    if (!selectedStatementId) {
+      throw new Error('No statement selected');
+    }
+    
+    try {
+      const result = await statementsService.saveStatementCode(selectedStatementId, codeToSave);
+      console.log(`Successfully saved code for statement: ${selectedStatementId}`, result);
+    } catch (error) {
+      console.error(`Failed to save code for statement ${selectedStatementId}:`, error);
+      throw error; // Re-throw to let EditableCodeEditor handle the error state
+    }
+  }, [selectedStatementId]);
+
+  const handleRebuildPdf = useCallback(async () => {
+    if (!selectedStatementId) return;
+    try {
+      setIsBuilding(true);
+      await statementsService.buildStatement(selectedStatementId);
+      // Bump shared PDF version so all viewers refresh
+      bumpPdfVersion((v) => v + 1);
+    } catch (error) {
+      console.error('Failed to rebuild statement PDF:', error);
+    } finally {
+      setIsBuilding(false);
+    }
+  }, [selectedStatementId, bumpPdfVersion]);
 
   // Handle loading states
   if (!statements) {
@@ -82,7 +151,7 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
       <div 
         ref={isDraggable ? setNodeRef : undefined}
         style={style}
-        className={`border-b border-gray-200 px-4 py-3 flex items-center justify-between ${isDragging ? 'opacity-50' : ''}`}
+        className={`border-b border-gray-200 px-3 py-2 flex items-center justify-between ${isDragging ? 'opacity-50' : ''}`}
       >
         <div className="flex items-center space-x-4">
           {isDraggable && (
@@ -93,23 +162,23 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
               title="Drag to reorder"
             >
               <svg
-                width="20"
-                height="20"
+                width="18"
+                height="18"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="w-5 h-5"
+                className="w-4 h-4"
               >
                 <path d="M7 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7 14a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM17 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM17 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM17 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM17 14a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM17 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
               </svg>
             </button>
           )}
-          <h2 className="text-lg font-semibold text-gray-700">Statement Viewer</h2>
+          <h2 className="text-sm font-medium text-gray-700">Statement</h2>
           
           {/* Statement dropdown */}
           <select
             value={selectedStatementId || ''}
             onChange={handleStatementChange}
-            className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {statements.map(statement => (
               <option key={statement.name} value={statement.name}>
@@ -119,28 +188,40 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
           </select>
         </div>
         
-        {/* View mode toggle and remove button */}
-        <div className="flex items-center space-x-4">
+        {/* View mode toggle, rebuild (PDF) and remove button */}
+        <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
-          <span className={`text-sm ${viewMode === 'pdf' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+          <span className={`text-xs ${viewMode === 'pdf' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
             PDF
           </span>
           <button
             onClick={toggleViewMode}
-            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="relative inline-flex h-5 w-10 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             role="switch"
             aria-checked={viewMode === 'code'}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                viewMode === 'code' ? 'translate-x-6' : 'translate-x-1'
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                viewMode === 'code' ? 'translate-x-5' : 'translate-x-1'
               }`}
             />
           </button>
-            <span className={`text-sm ${viewMode === 'code' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+            <span className={`text-xs ${viewMode === 'code' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
               Code
             </span>
           </div>
+
+          {viewMode === 'pdf' && (
+            <button
+              onClick={handleRebuildPdf}
+              disabled={!selectedStatementId || isBuilding}
+              className={`px-2 py-1 text-xs rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${isBuilding ? 'bg-gray-100 text-gray-500 border-gray-300' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+              title="Rebuild statement PDF"
+              type="button"
+            >
+              {isBuilding ? 'Rebuilding…' : 'Rebuild'}
+            </button>
+          )}
           
           {canRemove && (
             <button
@@ -149,7 +230,7 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
               title="Remove column"
             >
               <svg
-                className="w-4 h-4"
+                className="w-3.5 h-3.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -176,11 +257,13 @@ const StatementViewer: React.FC<StatementViewerProps> = ({
             showHeader={false}
           />
         ) : content.type === 'code' && content.content ? (
-          <CodeEditor
-            code={(content.content as any).code}
-            onChange={() => {}} // Read-only
+          <EditableCodeEditor
+            code={sharedCode}
+            onChange={setSharedCode}
+            onSave={handleSaveCode}
             language={(content.content as any).language || 'plaintext'}
             className="h-full"
+            sharedStatusKey={selectedStatementId ? `statement:${selectedStatementId}` : undefined}
           />
         ) : (
           <div className="flex items-center justify-center h-full">

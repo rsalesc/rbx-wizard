@@ -40,5 +40,42 @@ export const codeTemplatesService = {
       default:
         throw new Error(`Unknown code template type: ${type}`);
     }
+  },
+
+  /**
+   * Save validator code
+   */
+  async saveValidator(code: string): Promise<CodeResponse> {
+    return apiClient.put<CodeResponse>(API_ENDPOINTS.validator, {code});
+  },
+
+  /**
+   * Save checker code
+   */
+  async saveChecker(code: string): Promise<CodeResponse> {
+    return apiClient.put<CodeResponse>(API_ENDPOINTS.checker, {code});
+  },
+
+  /**
+   * Save interactor code
+   */
+  async saveInteractor(code: string): Promise<CodeResponse> {
+    return apiClient.put<CodeResponse>(API_ENDPOINTS.interactor, {code});
+  },
+
+  /**
+   * Save code template by type
+   */
+  async saveCodeTemplate(type: CodeTemplateType, code: string): Promise<CodeResponse> {
+    switch (type) {
+      case 'validator':
+        return this.saveValidator(code);
+      case 'checker':
+        return this.saveChecker(code);
+      case 'interactor':
+        return this.saveInteractor(code);
+      default:
+        throw new Error(`Unknown code template type: ${type}`);
+    }
   }
 };

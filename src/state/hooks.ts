@@ -1,6 +1,6 @@
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { useCallback } from 'react';
-import { columnsState, columnSizesState } from './atoms';
+import { columnsState, columnSizesState, templateCodeTextState } from './atoms';
 import {
   columnByIdSelector,
   statementsSelector,
@@ -122,11 +122,14 @@ export const useCodeEditorColumn = (columnId: string) => {
     codeTemplateSelector(config?.templateType || 'validator')
   );
 
+  const templateType = config?.templateType || 'validator';
+  const [sharedCode, setSharedCode] = useRecoilState(templateCodeTextState(templateType));
+
   const setCode = useCallback(
     (code: string) => {
-      updateConfig({ code });
+      setSharedCode(code);
     },
-    [updateConfig]
+    [setSharedCode]
   );
 
   const selectTemplate = useCallback(
@@ -147,8 +150,8 @@ export const useCodeEditorColumn = (columnId: string) => {
   );
 
   return {
-    code: config?.code || '',
-    templateType: config?.templateType || 'validator',
+    code: sharedCode,
+    templateType,
     language: config?.language || 'cpp',
     title: config?.title || 'Code Editor',
     templateCode,

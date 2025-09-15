@@ -1,4 +1,4 @@
-import { atom } from 'recoil';
+import { atom, atomFamily } from 'recoil';
 import { ColumnConfig, PERSISTENCE_KEYS } from './types';
 
 // Helper to load state from localStorage
@@ -97,4 +97,45 @@ export const columnSizesState = atom<number[]>({
       });
     },
   ],
+});
+
+// Shared code state by template type (keeps multiple editors in sync)
+export const templateCodeTextState = atomFamily<string, import('../api/services/codeTemplates').CodeTemplateType>({
+  key: 'templateCodeTextState',
+  default: '',
+});
+
+// Shared statement code state by statement id (sync across statement viewers in code mode)
+export const statementCodeTextState = atomFamily<string, string>({
+  key: 'statementCodeTextState',
+  default: '',
+});
+
+// PDF version token per statement id to force refresh across viewers when rebuilt
+export const statementPdfVersionState = atomFamily<number, string>({
+  key: 'statementPdfVersionState',
+  default: 0,
+});
+
+// Shared save status metadata for editors (code templates and statements)
+// Key format suggestion: `template:validator` or `statement:<id>`
+export type EditorSharedStatus = {
+  status: 'idle' | 'saving' | 'saved' | 'error';
+  isDirty: boolean;
+  lastSavedAt: number | null; // epoch ms
+};
+
+export const editorSaveMetaState = atomFamily<EditorSharedStatus, string>({
+  key: 'editorSaveMetaState',
+  default: {
+    status: 'idle',
+    isDirty: false,
+    lastSavedAt: null,
+  },
+});
+
+// Shared building state for statements
+export const statementBuildingState = atomFamily<boolean, string>({
+  key: 'statementBuildingState',
+  default: false,
 });

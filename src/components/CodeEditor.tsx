@@ -33,12 +33,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const defaultOptions = {
     minimap: { enabled: false },
-    fontSize: 14,
+    fontSize: 12,
     lineNumbers: 'on' as const,
     automaticLayout: true,
     padding: { top: 16, bottom: 16 },
     readOnly: false,
     domReadOnly: false,
+    wordWrap: 'on' as const,
     ...options
   };
 

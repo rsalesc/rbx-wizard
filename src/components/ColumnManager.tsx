@@ -74,28 +74,28 @@ const ColumnManager: React.FC = () => {
                   className="w-full text-sm"
                   variant="secondary"
                 >
-                  + Statement Viewer
+                  + Statement
                 </Button>
                 <Button
                   onClick={() => handleAddCodeEditorColumn('validator')}
                   className="w-full text-sm"
                   variant="secondary"
                 >
-                  + Validator Editor
+                  + Validator
                 </Button>
                 <Button
                   onClick={() => handleAddCodeEditorColumn('checker')}
                   className="w-full text-sm"
                   variant="secondary"
                 >
-                  + Checker Editor
+                  + Checker
                 </Button>
                 <Button
                   onClick={() => handleAddCodeEditorColumn('interactor')}
                   className="w-full text-sm"
                   variant="secondary"
                 >
-                  + Interactor Editor
+                  + Interactor
                 </Button>
               </div>
             </div>

@@ -23,3 +23,7 @@ export interface CodeResponse {
   code: string;
   language?: string;
 }
+
+export interface StatementBuildResponse {
+  path: string;
+}

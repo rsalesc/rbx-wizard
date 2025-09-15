@@ -1,6 +1,6 @@
 import { apiClient } from '../client';
 import { API_ENDPOINTS } from '../config';
-import { Statement, StatementsResponse, CodeResponse } from '../types';
+import { Statement, StatementsResponse, CodeResponse, StatementBuildResponse } from '../types';
 
 export const statementsService = {
   /**
@@ -23,5 +23,19 @@ export const statementsService = {
    */
   async getStatementCode(id: string): Promise<CodeResponse> {
     return apiClient.get<CodeResponse>(`${API_ENDPOINTS.statement}/${id}/code`);
+  },
+
+  /**
+   * Save statement code by ID
+   */
+  async saveStatementCode(id: string, code: string): Promise<CodeResponse> {
+    return apiClient.put<CodeResponse>(`${API_ENDPOINTS.statement}/${id}/code`, { code });
+  },
+
+  /**
+   * Build statement PDF by ID
+   */
+  async buildStatement(id: string): Promise<StatementBuildResponse> {
+    return apiClient.post<StatementBuildResponse>(`${API_ENDPOINTS.statement}/${id}/build`);
   }
 };

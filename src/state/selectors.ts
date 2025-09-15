@@ -1,5 +1,6 @@
 import { selector, selectorFamily, DefaultValue } from 'recoil';
 import { columnsState } from './atoms';
+import { statementPdfVersionState } from './atoms';
 import { ColumnConfig, CodeEditorColumnConfig, StatementColumnConfig } from './types';
 import { statementsService, codeTemplatesService } from '../api';
 import { Statement, CodeResponse } from '../api/types';
@@ -111,9 +112,12 @@ export const statementContentSelector = selectorFamily<
     }
 
     if (config.viewMode === 'pdf') {
+      const version = get(statementPdfVersionState(config.selectedStatementId));
+      const pdfUrl = `http://localhost:8000/statement/${config.selectedStatementId}?v=${version}`;
+      console.log('Generating PDF URL for statement:', config.selectedStatementId, '-> URL:', pdfUrl);
       return {
         type: 'pdf',
-        content: `http://localhost:8000/statement/${config.selectedStatementId}`,
+        content: pdfUrl,
       };
     } else {
       const codeData = get(statementCodeSelector(config.selectedStatementId));
