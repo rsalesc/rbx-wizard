@@ -2,6 +2,7 @@ import React, { Suspense, useState } from 'react';
 import ResizableColumnsV2 from './ResizableColumnsV2';
 import StatementViewer from './StatementViewer';
 import CodeEditorColumn from './CodeEditorColumn';
+import AssistantColumn from './AssistantColumn';
 import { LoadingSpinner } from './common/LoadingSpinner';
 import { useColumns } from '../state/hooks';
 import {
@@ -64,8 +65,14 @@ const DraggableColumns: React.FC = () => {
             className="h-full"
             isDraggable
           />
-        ) : (
+        ) : column.type === 'code-editor' ? (
           <CodeEditorColumn
+            columnId={column.id}
+            className="h-full"
+            isDraggable
+          />
+        ) : (
+          <AssistantColumn
             columnId={column.id}
             className="h-full"
             isDraggable

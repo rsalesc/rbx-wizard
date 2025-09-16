@@ -9,3 +9,10 @@ export * from './types';
 export { statementsService } from './services/statements';
 export { codeTemplatesService } from './services/codeTemplates';
 export type { CodeTemplateType } from './services/codeTemplates';
+export { llmService } from './services/llm';
+export type { 
+  ReviewRequest, 
+  FullReviewResponse,
+  StatementLanguageReviewRequest, 
+  StatementLanguageReviewResponse 
+} from './services/llm';

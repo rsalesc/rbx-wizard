@@ -1,7 +1,7 @@
 import { CodeTemplateType } from '../api/services/codeTemplates';
 
 // Column types
-export type ColumnType = 'statement' | 'code-editor';
+export type ColumnType = 'statement' | 'code-editor' | 'assistant';
 
 // Base column configuration
 export interface BaseColumn {
@@ -32,8 +32,24 @@ export interface CodeEditorColumnConfig extends BaseColumn {
   };
 }
 
+// Assistant column configuration
+export type AssistantMode = 'full-review' | 'validator-review' | 'statement-review' | null;
+
+// Review results for both full and statement reviews are markdown strings
+export type ReviewResults = string;
+
+export interface AssistantColumnConfig extends BaseColumn {
+  type: 'assistant';
+  config: {
+    selectedModel: string;
+    assistantMode: AssistantMode;
+    reviewResults: ReviewResults | null;
+    isLoading: boolean;
+  };
+}
+
 // Union type for all column configurations
-export type ColumnConfig = StatementColumnConfig | CodeEditorColumnConfig;
+export type ColumnConfig = StatementColumnConfig | CodeEditorColumnConfig | AssistantColumnConfig;
 
 // Application state
 export interface AppState {

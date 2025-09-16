@@ -1,5 +1,5 @@
 import { API_BASE_URL, DEFAULT_HEADERS } from './config';
-import { ApiError, ApiRequestOptions } from './types';
+import { ApiRequestOptions } from './types';
 
 class ApiClient {
   private baseUrl: string;
@@ -24,7 +24,7 @@ class ApiClient {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      let errorData: ApiError;
+      let errorData: any;
       
       try {
         errorData = await response.json();
@@ -34,10 +34,21 @@ class ApiClient {
         };
       }
       
-      throw new Error(errorData.message || 'An error occurred');
+      // Handle both 'detail' (FastAPI) and 'message' error formats
+      const errorMessage = errorData.detail || errorData.message || 'An error occurred';
+      throw new Error(errorMessage);
     }
     
-    return response.json();
+    // Check content type to determine how to parse the response
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      // For plain text or other content types, return as text
+      // TypeScript will need to trust that T can be a string in these cases
+      return response.text() as Promise<T>;
+    }
   }
 
   async get<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
@@ -46,7 +57,7 @@ class ApiClient {
     
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = !options?.noTimeout ? setTimeout(() => controller.abort(), 10000) : undefined; // 10 second timeout
     
     try {
       const response = await fetch(url, {
@@ -76,7 +87,7 @@ class ApiClient {
     
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = !options?.noTimeout ? setTimeout(() => controller.abort(), 10000) : undefined; // 10 second timeout
     
     try {
       const response = await fetch(url, {
@@ -107,7 +118,7 @@ class ApiClient {
     
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = !options?.noTimeout ? setTimeout(() => controller.abort(), 10000) : undefined; // 10 second timeout
     
     try {
       const response = await fetch(url, {
@@ -138,7 +149,7 @@ class ApiClient {
     
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = !options?.noTimeout ? setTimeout(() => controller.abort(), 10000) : undefined; // 10 second timeout
     
     try {
       const response = await fetch(url, {

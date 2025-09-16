@@ -26,7 +26,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   onLoadError,
   showHeader = true
 }) => {
-  console.log('PDFViewer rendering with file:', pdfFile);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const [scale, setScale] = useState(1);

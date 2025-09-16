@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useColumns } from '../state/hooks';
-import { ColumnConfig } from '../state/types';
+import { ColumnConfig, AssistantColumnConfig } from '../state/types';
 import { Button } from './common/Button';
 
 const ColumnManager: React.FC = () => {
@@ -40,6 +40,23 @@ const ColumnManager: React.FC = () => {
       },
       minSize: 20,
       maxSize: 60,
+      defaultSize: 30,
+    };
+    addColumn(newColumn);
+  };
+
+  const handleAddAssistantColumn = () => {
+    const newColumn: AssistantColumnConfig = {
+      id: `assistant-${Date.now()}`,
+      type: 'assistant',
+      config: {
+        selectedModel: 'gpt-4o',
+        assistantMode: null,
+        reviewResults: null,
+        isLoading: false,
+      },
+      minSize: 20,
+      maxSize: 50,
       defaultSize: 30,
     };
     addColumn(newColumn);
@@ -96,6 +113,13 @@ const ColumnManager: React.FC = () => {
                   variant="secondary"
                 >
                   + Interactor
+                </Button>
+                <Button
+                  onClick={handleAddAssistantColumn}
+                  className="w-full text-sm"
+                  variant="secondary"
+                >
+                  + AI Assistant
                 </Button>
               </div>
             </div>

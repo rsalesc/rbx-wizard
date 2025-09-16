@@ -1,7 +1,7 @@
 import { selector, selectorFamily, DefaultValue } from 'recoil';
 import { columnsState } from './atoms';
 import { statementPdfVersionState } from './atoms';
-import { ColumnConfig, CodeEditorColumnConfig, StatementColumnConfig } from './types';
+import { ColumnConfig, CodeEditorColumnConfig, StatementColumnConfig, AssistantColumnConfig } from './types';
 import { statementsService, codeTemplatesService } from '../api';
 import { Statement, CodeResponse } from '../api/types';
 
@@ -94,6 +94,21 @@ export const codeEditorColumnConfigSelector = selectorFamily<
     const column = get(columnByIdSelector(columnId));
     if (column?.type === 'code-editor') {
       return (column as CodeEditorColumnConfig).config;
+    }
+    return null;
+  },
+});
+
+// Helper selector to get assistant column config
+export const assistantColumnConfigSelector = selectorFamily<
+  AssistantColumnConfig['config'] | null,
+  string
+>({
+  key: 'assistantColumnConfigSelector',
+  get: (columnId) => ({ get }) => {
+    const column = get(columnByIdSelector(columnId));
+    if (column?.type === 'assistant') {
+      return (column as AssistantColumnConfig).config;
     }
     return null;
   },

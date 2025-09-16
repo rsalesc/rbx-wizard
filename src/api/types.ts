@@ -2,6 +2,7 @@
 
 export interface Statement {
   name: string;
+  language: string;
 }
 
 export interface StatementsResponse {
@@ -16,6 +17,7 @@ export interface ApiError {
 
 export interface ApiRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean>;
+  noTimeout?: boolean;
 }
 
 export interface CodeResponse {
